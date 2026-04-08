@@ -363,7 +363,15 @@ select.fi{cursor:pointer;appearance:none;background-image:url("data:image/svg+xm
           <div class="ss">
             <div class="ss-hdr"><span class="sn">3</span> Connect and start syncing</div>
             <div class="ss-body">
-              <div style="font-size:13px;color:var(--text2);margin-bottom:.85rem;line-height:1.5">After saving your token, click below. The app will verify your token, create a private Gist for your data, and start syncing automatically.</div>
+              <div style="font-size:13px;color:var(--text2);margin-bottom:.85rem;line-height:1.6">
+                <strong>First device (PC):</strong> Leave the Gist ID field empty and click Connect — a new Gist is created automatically.<br>
+                <strong>Second device (mobile):</strong> Copy the Gist ID shown after connecting on PC and paste it here before clicking Connect.
+              </div>
+              <label class="fl">Gist ID <span style="font-weight:400;text-transform:none;font-size:11px;color:var(--text3)">(leave empty on first device — copy from PC to mobile)</span></label>
+              <div style="display:flex;gap:8px;margin-bottom:.85rem">
+                <input class="fi" id="gh-gist-input" placeholder="e.g. a1b2c3d4e5f6..." style="flex:1;font-family:monospace;font-size:13px">
+                <button class="btn" onclick="copyGistId()" id="btn-copy-gist" style="display:none">Copy ID</button>
+              </div>
               <button class="btn btn-dark" onclick="ghConnect()">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
                 Connect GitHub
@@ -389,6 +397,15 @@ select.fi{cursor:pointer;appearance:none;background-image:url("data:image/svg+xm
               <div style="font-size:12px;color:var(--d-txt);opacity:.75" id="gh-user"></div>
             </div>
             <button class="btn btn-sm btn-danger" onclick="ghDisconnect()">Disconnect</button>
+          </div>
+          <!-- Gist ID share box -->
+          <div style="background:var(--p-bg);border:1px solid var(--p-brd);border-radius:var(--r);padding:.85rem 1rem;margin-bottom:1rem">
+            <div style="font-size:11px;font-weight:700;color:var(--p-txt);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px">&#128279; Share this Gist ID with your other device</div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <code id="gist-id-display" style="flex:1;font-size:12px;background:var(--surface);padding:7px 10px;border-radius:6px;border:1px solid var(--p-brd);color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></code>
+              <button class="btn btn-sm" onclick="copyGistId()" id="btn-copy-gist2">Copy</button>
+            </div>
+            <div style="font-size:11px;color:var(--p-txt);margin-top:6px">On your other device: Setup &#8594; Data &amp; Sync &#8594; paste this ID in Step 3 before connecting.</div>
           </div>
           <div style="font-size:13px;color:var(--text2);line-height:2;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:.85rem 1rem;margin-bottom:1rem">
             <strong>How it works:</strong><br>
@@ -549,6 +566,12 @@ function saveGHToken(){
 async function ghConnect(){
   getGHCreds();
   if(!ghToken){toast('Paste your GitHub token first.');return;}
+  // Check if user manually entered a Gist ID
+  var inputEl=document.getElementById('gh-gist-input');
+  if(inputEl&&inputEl.value.trim()){
+    ghGistId=inputEl.value.trim();
+    localStorage.setItem(GH_GIST_KEY,ghGistId);
+  }
   setSS('spin','Connecting to GitHub…');
   try{
     var res=await fetch('https://api.github.com/user',{headers:{'Authorization':'token '+ghToken,'Accept':'application/vnd.github.v3+json'}});
@@ -596,12 +619,30 @@ async function pushToGist(showToast){
 function schedulePush(){clearTimeout(pushTimer);pushTimer=setTimeout(function(){pushToGist(false);},2000);}
 
 function onGHConnected(username){
-  document.getElementById('gh-user').textContent='Connected as '+username+(ghGistId?' · Gist: '+ghGistId.slice(0,8)+'…':'');
+  document.getElementById('gh-user').textContent='Connected as '+username;
   showGHSignedIn();
+  // Show Gist ID in the display box
+  var gd=document.getElementById('gist-id-display');if(gd&&ghGistId)gd.textContent=ghGistId;
+  // Show copy button in step 3 for reference
+  var bcg=document.getElementById('btn-copy-gist');if(bcg)bcg.style.display='inline-flex';
+  var gi=document.getElementById('gh-gist-input');if(gi&&ghGistId)gi.value=ghGistId;
   document.getElementById('btn-signin').style.display='none';
   document.getElementById('btn-pull').style.display='inline-flex';
   document.getElementById('btn-signout').style.display='inline-flex';
   setSS('ok','✓ GitHub sync active — '+username);
+}
+
+function copyGistId(){
+  if(!ghGistId){toast('No Gist ID yet — connect first.');return;}
+  navigator.clipboard.writeText(ghGistId).then(function(){
+    toast('Gist ID copied ✓ Paste it on your other device in Setup → Data & Sync → Step 3');
+  }).catch(function(){
+    // Fallback for older browsers
+    var el=document.createElement('textarea');
+    el.value=ghGistId;document.body.appendChild(el);el.select();
+    document.execCommand('copy');document.body.removeChild(el);
+    toast('Gist ID copied ✓');
+  });
 }
 function ghDisconnect(){
   if(!confirm('Disconnect GitHub sync? Your local data is kept.'))return;
@@ -650,7 +691,7 @@ function goST(t){
     if(sp)sp.classList.toggle('hidden',x!==t);if(st)st.classList.toggle('on',x===t);
   });
   if(t==='projects')renderPT();if(t==='contacts')renderCT();
-  if(t==='sync'){getGHCreds();var gt=document.getElementById('gh-token');if(gt&&ghToken)gt.value=ghToken;}
+  if(t==='sync'){getGHCreds();var gt=document.getElementById('gh-token');if(gt&&ghToken)gt.value=ghToken;var gi=document.getElementById('gh-gist-input');if(gi&&ghGistId)gi.value=ghGistId;var gd=document.getElementById('gist-id-display');if(gd&&ghGistId)gd.textContent=ghGistId;}
 }
 
 // DASHBOARD
