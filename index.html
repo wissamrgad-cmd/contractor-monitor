@@ -398,14 +398,16 @@ select.fi{cursor:pointer;appearance:none;background-image:url("data:image/svg+xm
             </div>
             <button class="btn btn-sm btn-danger" onclick="ghDisconnect()">Disconnect</button>
           </div>
-          <!-- Gist ID share box -->
-          <div style="background:var(--p-bg);border:1px solid var(--p-brd);border-radius:var(--r);padding:.85rem 1rem;margin-bottom:1rem">
-            <div style="font-size:11px;font-weight:700;color:var(--p-txt);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px">&#128279; Share this Gist ID with your other device</div>
-            <div style="display:flex;gap:8px;align-items:center">
-              <code id="gist-id-display" style="flex:1;font-size:12px;background:var(--surface);padding:7px 10px;border-radius:6px;border:1px solid var(--p-brd);color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></code>
-              <button class="btn btn-sm" onclick="copyGistId()" id="btn-copy-gist2">Copy</button>
+          <!-- Gist ID share box — always visible when signed in -->
+          <div style="background:#FBF5E6;border:2px solid #E8D49A;border-radius:var(--r);padding:1rem 1.1rem;margin-bottom:1rem">
+            <div style="font-size:11px;font-weight:700;color:#7A5C18;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">&#128279; Your Gist ID — needed to sync your other device</div>
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+              <code id="gist-id-display" style="flex:1;font-size:13px;font-weight:600;background:#fff;padding:9px 12px;border-radius:6px;border:1px solid #E8D49A;color:#18160F;word-break:break-all">Loading...</code>
+              <button class="btn btn-dark" onclick="copyGistId()" id="btn-copy-gist2" style="flex-shrink:0">&#128203; Copy ID</button>
             </div>
-            <div style="font-size:11px;color:var(--p-txt);margin-top:6px">On your other device: Setup &#8594; Data &amp; Sync &#8594; paste this ID in Step 3 before connecting.</div>
+            <div style="font-size:12px;color:#7A5C18;line-height:1.6">
+              <strong>To sync your other device:</strong> Open app → Setup → Data &amp; Sync → paste this ID in the Gist ID field (Step 3) → Connect GitHub
+            </div>
           </div>
           <div style="font-size:13px;color:var(--text2);line-height:2;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:.85rem 1rem;margin-bottom:1rem">
             <strong>How it works:</strong><br>
@@ -650,7 +652,16 @@ function ghDisconnect(){
   ghToken=null;ghGistId=null;showGHSignedOut();
   setSS('warn','Saved locally — reconnect to sync');toast('Disconnected.');
 }
-function showGHSignedIn(){var o=document.getElementById('sync-out'),i=document.getElementById('sync-in');if(o)o.classList.add('hidden');if(i)i.classList.remove('hidden');}
+function showGHSignedIn(){
+  var o=document.getElementById('sync-out'),i=document.getElementById('sync-in');
+  if(o)o.classList.add('hidden');if(i)i.classList.remove('hidden');
+  // Always populate Gist ID from storage when showing the signed-in panel
+  getGHCreds();
+  var gd=document.getElementById('gist-id-display');
+  if(gd) gd.textContent=ghGistId||'Not created yet — click Connect GitHub';
+  var gi=document.getElementById('gh-gist-input');
+  if(gi&&ghGistId) gi.value=ghGistId;
+}
 function showGHSignedOut(){var o=document.getElementById('sync-out'),i=document.getElementById('sync-in');if(o)o.classList.remove('hidden');if(i)i.classList.add('hidden');document.getElementById('btn-signin').style.display='inline-flex';document.getElementById('btn-pull').style.display='none';document.getElementById('btn-signout').style.display='none';}
 
 // EXPORT / IMPORT
@@ -691,7 +702,7 @@ function goST(t){
     if(sp)sp.classList.toggle('hidden',x!==t);if(st)st.classList.toggle('on',x===t);
   });
   if(t==='projects')renderPT();if(t==='contacts')renderCT();
-  if(t==='sync'){getGHCreds();var gt=document.getElementById('gh-token');if(gt&&ghToken)gt.value=ghToken;var gi=document.getElementById('gh-gist-input');if(gi&&ghGistId)gi.value=ghGistId;var gd=document.getElementById('gist-id-display');if(gd&&ghGistId)gd.textContent=ghGistId;}
+  if(t==='sync'){getGHCreds();var gt=document.getElementById('gh-token');if(gt&&ghToken)gt.value=ghToken;var gi=document.getElementById('gh-gist-input');if(gi&&ghGistId)gi.value=ghGistId;var gd=document.getElementById('gist-id-display');if(gd)gd.textContent=ghGistId||'Not created yet — click Connect GitHub';if(ghToken)showGHSignedIn();}
 }
 
 // DASHBOARD
@@ -913,8 +924,17 @@ function init(){
   updNav();renderDash();setupLU('lu1');setupLU('lu2');
   if(!S.projects.length&&!S.contacts.length)document.getElementById('onboard-banner').classList.remove('hidden');
   getGHCreds();
-  if(ghToken){ghConnect();}
-  else{setSS('warn','Saved locally — go to Setup → Data & Sync to enable sync');document.getElementById('btn-signin').style.display='inline-flex';}
+  if(ghToken){
+    // Show connected UI immediately so Gist ID is visible, then sync
+    if(ghGistId) showGHSignedIn();
+    document.getElementById('btn-signin').style.display='none';
+    document.getElementById('btn-pull').style.display='inline-flex';
+    document.getElementById('btn-signout').style.display='inline-flex';
+    ghConnect();
+  }else{
+    setSS('warn','Saved locally — go to Setup → Data & Sync to enable sync');
+    document.getElementById('btn-signin').style.display='inline-flex';
+  }
 }
 init();
 </script>
