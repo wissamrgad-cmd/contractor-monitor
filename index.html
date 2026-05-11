@@ -179,7 +179,7 @@ select.fi{cursor:pointer;appearance:none;background-image:url("data:image/svg+xm
   <div class="sync-status">
     <div class="sd off" id="sync-dot"></div>
     <span class="sync-txt" id="sync-txt">Initialising…</span>
-    <span style="font-size:10px;color:var(--text3);margin-left:auto;padding-right:4px" title="App version">v09 Apr 2026 21:17</span>
+    <span style="font-size:10px;color:var(--text3);margin-left:auto;padding-right:4px" title="App version">v11 May 2026 18:51</span>
   </div>
   <div class="sync-acts">
     <button class="btn btn-xs btn-dark" id="btn-signin" onclick="goP('setup');goST('sync')" style="display:none">Connect GitHub</button>
@@ -736,7 +736,7 @@ async function pullFromGist(showToast){
         // Remove any tasks that have been tombstoned
         merged.tasks=merged.tasks.filter(function(t){return !allTombstones[t.id];});
         // 2. Restore logo
-        if(merged.firm.logo==='[logo stored locally]'&&localS.firm&&localS.firm.logo){
+        if((merged.firm.logo==='[logo stored locally]'||merged.firm.logo==='[local]')&&localS.firm&&localS.firm.logo){
           merged.firm.logo=localS.firm.logo;
         }
         // 3. Restore images stripped before push
@@ -744,7 +744,7 @@ async function pullFromGist(showToast){
           var lt=localS.tasks&&localS.tasks.find(function(t){return t.id===pt.id;});
           if(lt&&pt.attachments){
             pt.attachments=pt.attachments.map(function(pa,ai){
-              if(pa.hasLocalImage&&lt.attachments&&lt.attachments[ai]&&lt.attachments[ai].data){
+              if((pa.hasLocalData||pa.hasLocalImage)&&lt.attachments&&lt.attachments[ai]&&lt.attachments[ai].data){
                 return lt.attachments[ai];
               }
               return pa;
@@ -773,8 +773,15 @@ async function pullFromGist(showToast){
       setSS('warn','⚠ No internet — working from local data');
       if(showToast)toast('No internet — changes saved locally',3000);
     }else{
-      setSS('warn','Sync error: '+e.message);
-      if(showToast)toast('Sync error: '+e.message,4000);
+      var em=e.message||'';
+      if(em.includes('JSON')||em.includes('Unterminated')||em.includes('position')){
+        setSS('warn','⚠ Gist corrupted — press Reset button');
+        var rb=document.getElementById('btn-reset-gist');if(rb)rb.style.display='inline-flex';
+        var pb=document.getElementById('btn-pull');if(pb)pb.style.display='none';
+        if(showToast)toast('Gist corrupted — press Reset button in sync bar',5000);
+      }else{
+        setSS('warn','Sync error: '+em);if(showToast)toast('Sync error: '+em,4000);
+      }
     }
   }
 }
@@ -795,19 +802,7 @@ async function pushToGist(showToast){
         if(payload._deleted[id]<cutoff)delete payload._deleted[id];
       });
     }
-    payload.tasks=(payload.tasks||[]).map(function(t){
-      var tc=Object.assign({},t);
-      tc.attachments=(t.attachments||[]).map(function(a){
-        if(a.type&&a.type.startsWith('image/')&&a.data&&a.data.length>500){
-          return{name:a.name,type:a.type,caption:a.caption||'',origW:a.origW,origH:a.origH,hasLocalImage:true};
-        }
-        return a;
-      });
-      return tc;
-    });
-    if(payload.firm&&payload.firm.logo){
-      payload.firm=Object.assign({},payload.firm,{logo:'[logo stored locally]'});
-    }
+    payload.tasks=(payload.tasks||[]).map(function(t){var tc=Object.assign({},t);tc.attachments=(t.attachments||[]).map(function(a){if(a.data){return{name:a.name,type:a.type,caption:a.caption||'',origW:a.origW||0,origH:a.origH||0,hasLocalData:true};}return a;});return tc;});if(payload.firm&&payload.firm.logo){payload.firm=Object.assign({},payload.firm,{logo:'[local]'});}
     var content=JSON.stringify(payload,null,2);
     if(content.length>8*1024*1024){
       setSS('warn','Data too large to sync — images kept locally only');
@@ -1104,26 +1099,57 @@ function onTMP(pre){var pid=document.getElementById('tm-proj').value;var cs=pid?
 var capQueue = []; // queue of {name, data, type} waiting for captions
 // Compress + orient image: max 1200px, JPEG 65% — brings 4MB photo to ~150KB
 function compressAndOrient(dataUrl, callback) {
-  fixImageOrientation(dataUrl, function(oriented, ow, oh) {
-    var MAX = 1200;
-    var img = new Image();
-    img.onload = function() {
-      var w = img.width, h = img.height;
-      if (w <= MAX && h <= MAX && dataUrl.length < 200*1024) {
-        // Already small enough — just pass through
-        callback(oriented, w, h); return;
+  var img = new Image();
+  img.onload = function() {
+    var w=img.naturalWidth||img.width, h=img.naturalHeight||img.height;
+    var orientation=1;
+    try{
+      var bin=atob(dataUrl.split(',')[1]);
+      var bytes=new Uint8Array(bin.length);
+      for(var i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+      var view=new DataView(bytes.buffer);
+      if(view.getUint16(0,false)===0xFFD8){
+        var off=2;
+        while(off<bytes.length-4){
+          var mk=view.getUint16(off,false);off+=2;
+          if(mk===0xFFE1){
+            if(view.getUint32(off+2,false)===0x45786966){
+              var le=view.getUint16(off+8,false)===0x4949;
+              var ifd=off+8+view.getUint32(off+12,le);
+              var tags=view.getUint16(ifd,le);
+              for(var t=0;t<tags;t++){if(view.getUint16(ifd+2+t*12,le)===0x0112){orientation=view.getUint16(ifd+2+t*12+8,le);break;}}
+            }
+            break;
+          }
+          if((mk&0xFF00)!==0xFF00)break;
+          off+=view.getUint16(off,false);
+        }
       }
-      var scale = Math.min(MAX/w, MAX/h, 1);
-      var cw = Math.round(w * scale), ch = Math.round(h * scale);
-      var cv = document.createElement('canvas');
-      cv.width = cw; cv.height = ch;
-      var ctx = cv.getContext('2d');
-      ctx.drawImage(img, 0, 0, cw, ch);
-      var compressed = cv.toDataURL('image/jpeg', 0.65);
-      callback(compressed, cw, ch);
-    };
-    img.src = oriented;
-  });
+    }catch(ex){}
+    var MAX=1200;
+    var sw=(orientation>=5&&orientation<=8)?h:w;
+    var sh=(orientation>=5&&orientation<=8)?w:h;
+    var scale=Math.min(MAX/sw,MAX/sh,1);
+    var cw=Math.round(sw*scale),ch=Math.round(sh*scale);
+    var cv=document.createElement('canvas');cv.width=cw;cv.height=ch;
+    var ctx=cv.getContext('2d');
+    ctx.save();
+    switch(orientation){
+      case 2:ctx.transform(-1,0,0,1,cw,0);break;
+      case 3:ctx.transform(-1,0,0,-1,cw,ch);break;
+      case 4:ctx.transform(1,0,0,-1,0,ch);break;
+      case 5:ctx.transform(0,1,1,0,0,0);break;
+      case 6:ctx.transform(0,1,-1,0,ch,0);break;
+      case 7:ctx.transform(0,-1,-1,0,ch,cw);break;
+      case 8:ctx.transform(0,-1,1,0,0,cw);break;
+    }
+    if(orientation>=5&&orientation<=8){ctx.drawImage(img,0,0,w*scale,h*scale);}
+    else{ctx.drawImage(img,0,0,cw,ch);}
+    ctx.restore();
+    callback(cv.toDataURL('image/jpeg',0.72),cw,ch);
+  };
+  img.onerror=function(){callback(dataUrl,0,0);};
+  img.src=dataUrl;
 }
 
 function processImageFiles(files) {
@@ -1448,29 +1474,42 @@ async function sharePDF(){
         if(meta.length){doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(130,130,130);doc.text(meta.join('  ·  '),M+5,y);y+=5;}
         // Description
         if(t.desc){checkPage(8);doc.setFontSize(8.5);doc.setFont('helvetica','italic');doc.setTextColor(70,70,70);if(hasArabic(t.desc)){var di=textToImgData(t.desc,8.5,W-M*2-10,'#464646');try{doc.addImage(di.data,'JPEG',M+5,y-2,di.w,di.h,'','FAST');}catch(e){}y+=di.h+1;}else{var dlines=doc.splitTextToSize(t.desc,W-M*2-8);doc.text(dlines,M+5,y);y+=dlines.length*5.5;}}
-        // ATTACHMENTS — images embedded
-        var imgs=(t.attachments||[]).filter(function(a){return a.type&&a.type.startsWith('image/')&&a.data;});
-        if(imgs.length){
-          checkPage(42);
-          var ix=M+3,maxImgW=50,maxImgH=50;
-          imgs.forEach(function(a){
-            // Calculate correct dimensions preserving aspect ratio
-            var natW=a.origW||100,natH=a.origH||100;
-            var ratio=natW/natH;
-            var imgW,imgH;
-            if(ratio>1){imgW=maxImgW;imgH=Math.round(maxImgW/ratio);}
-            else{imgH=maxImgH;imgW=Math.round(maxImgH*ratio);}
-            if(ix+imgW>W-M){ix=M+3;y+=maxImgH+12;checkPage(maxImgH+14);}
-            try{
-              // Photo already compressed on import — use directly
-              doc.addImage(a.data,'JPEG',ix,y,imgW,imgH,'','FAST');
-              if(a.caption){doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(100,100,100);
-                if(hasArabic(a.caption)){var ci=textToImgData(a.caption,7,imgW,'#646464');try{doc.addImage(ci.data,'JPEG',ix,y+imgH+1,ci.w,ci.h,'','FAST');}catch(e){}}
-                else{var clines=doc.splitTextToSize(a.caption,imgW);doc.text(clines,ix,y+imgH+3);}}
-              ix+=imgW+4;
-            }catch(e){}
+        // ATTACHMENTS — photos + PDF boxes + files
+        var atts=(t.attachments||[]).filter(function(a){return a.data;});
+        if(atts.length){
+          checkPage(44);
+          var ix=M+3,maxImgW=50,maxImgH=50,rowH=0;
+          atts.forEach(function(a){
+            var isImg=a.type&&a.type.startsWith('image/');
+            var isPdf=a.type&&a.type.includes('pdf')||a.name.toLowerCase().slice(-4)==='.pdf';
+            if(isImg){
+              var r=(a.origW||100)/(a.origH||100);
+              var iw=r>1?maxImgW:Math.round(maxImgH*r),ih=r>1?Math.round(maxImgW/r):maxImgH;
+              if(ix+iw>W-M){ix=M+3;y+=rowH+6;rowH=0;checkPage(ih+10);}
+              try{
+                doc.addImage(a.data,'JPEG',ix,y,iw,ih,'','FAST');
+                if(a.caption){doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(100,100,100);doc.text(doc.splitTextToSize(a.caption,iw),ix,y+ih+3);}
+                rowH=Math.max(rowH,ih+6);ix+=iw+4;
+              }catch(e){}
+            }else if(isPdf){
+              var bw=46,bh=16;
+              if(ix+bw>W-M){ix=M+3;y+=rowH+4;rowH=0;checkPage(bh+6);}
+              doc.setFillColor(232,237,248);doc.roundedRect(ix,y,bw,bh,2,2,'F');
+              doc.setDrawColor(168,196,224);doc.roundedRect(ix,y,bw,bh,2,2,'S');
+              doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.setTextColor(26,74,122);
+              doc.text('PDF',ix+2.5,y+5.5);
+              doc.setFontSize(6.5);doc.setFont('helvetica','normal');
+              doc.text(doc.splitTextToSize(a.name.replace(/\.pdf$/i,''),bw-8).slice(0,2),ix+2.5,y+10);
+              rowH=Math.max(rowH,bh+4);ix+=bw+4;
+            }else{
+              if(ix+38>W-M){ix=M+3;y+=rowH+4;rowH=0;checkPage(12);}
+              doc.setFillColor(240,237,230);doc.roundedRect(ix,y,36,10,2,2,'F');
+              doc.setFontSize(6.5);doc.setFont('helvetica','normal');doc.setTextColor(60,60,60);
+              doc.text(a.name.slice(0,16),ix+2,y+7);
+              rowH=Math.max(rowH,12);ix+=40;
+            }
           });
-          y+=maxImgH+14;
+          y+=rowH+6;
         }
         // Separator
         doc.setDrawColor(235,232,226);doc.line(M+3,y,W-M-3,y);y+=4;
