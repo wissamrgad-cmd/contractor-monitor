@@ -179,7 +179,7 @@ select.fi{cursor:pointer;appearance:none;background-image:url("data:image/svg+xm
   <div class="sync-status">
     <div class="sd off" id="sync-dot"></div>
     <span class="sync-txt" id="sync-txt">Initialising…</span>
-    <span style="font-size:10px;color:var(--text3);margin-left:auto;padding-right:4px" title="App version">v11 May 2026 18:51</span>
+    <span style="font-size:10px;color:var(--text3);margin-left:auto;padding-right:4px" title="App version">v14 May 2026 12:20</span>
   </div>
   <div class="sync-acts">
     <button class="btn btn-xs btn-dark" id="btn-signin" onclick="goP('setup');goST('sync')" style="display:none">Connect GitHub</button>
@@ -803,6 +803,9 @@ async function pushToGist(showToast){
       });
     }
     payload.tasks=(payload.tasks||[]).map(function(t){var tc=Object.assign({},t);tc.attachments=(t.attachments||[]).map(function(a){if(a.data){return{name:a.name,type:a.type,caption:a.caption||'',origW:a.origW||0,origH:a.origH||0,hasLocalData:true};}return a;});return tc;});if(payload.firm&&payload.firm.logo){payload.firm=Object.assign({},payload.firm,{logo:'[local]'});}
+    // Hard safety strip — remove ANY base64 data that slipped through
+    function stripBinary(obj){if(!obj||typeof obj!=='object')return obj;if(Array.isArray(obj))return obj.map(stripBinary);var r={};Object.keys(obj).forEach(function(k){var v=obj[k];if(typeof v==='string'&&v.length>500&&v.indexOf(';base64,')>-1){r[k]='[stripped]';}else if(typeof v==='object'){r[k]=stripBinary(v);}else{r[k]=v;}});return r;}
+    payload=stripBinary(payload);
     var content=JSON.stringify(payload,null,2);
     if(content.length>8*1024*1024){
       setSS('warn','Data too large to sync — images kept locally only');
