@@ -179,7 +179,7 @@ select.fi{cursor:pointer;appearance:none;background-image:url("data:image/svg+xm
   <div class="sync-status">
     <div class="sd off" id="sync-dot"></div>
     <span class="sync-txt" id="sync-txt">Initialising…</span>
-    <span style="font-size:10px;color:var(--text3);margin-left:auto;padding-right:4px" title="App version">v14 May 2026 12:20</span>
+    <span style="font-size:10px;color:var(--text3);margin-left:auto;padding-right:4px" title="App version">v14 May 2026 16:21</span>
   </div>
   <div class="sync-acts">
     <button class="btn btn-xs btn-dark" id="btn-signin" onclick="goP('setup');goST('sync')" style="display:none">Connect GitHub</button>
@@ -668,7 +668,7 @@ async function ghConnect(){
   }
   setSS('spin','Connecting to GitHub…');
   try{
-    var res=await fetch('https://api.github.com/user',{mode:'cors',headers:{'Authorization':'token '+ghToken,'Accept':'application/vnd.github.v3+json'}});
+    var res=await fetch('https://api.github.com/user',{mode:'cors',headers:{'Authorization':'Bearer '+ghToken,'Accept':'application/vnd.github.v3+json'}});
     if(!res.ok){setSS('warn','Invalid token — check it has gist scope');toast('Token error: '+res.status);return;}
     var user=await res.json();
     if(ghGistId){await pullFromGist(false);}else{await createGist();}
@@ -677,7 +677,7 @@ async function ghConnect(){
 }
 
 async function createGist(){
-  var res=await fetch('https://api.github.com/gists',{mode:'cors',method:'POST',headers:{'Authorization':'token '+ghToken,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},body:JSON.stringify({description:'Contractor Monitor Data',public:false,files:{'contractor-data.json':{content:JSON.stringify(S,null,2)}}})});
+  var res=await fetch('https://api.github.com/gists',{mode:'cors',method:'POST',headers:{'Authorization':'Bearer '+ghToken,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},body:JSON.stringify({description:'Contractor Monitor Data',public:false,files:{'contractor-data.json':{content:JSON.stringify(S,null,2)}}})});
   if(!res.ok)throw new Error('Could not create gist: '+res.status);
   var g=await res.json();ghGistId=g.id;localStorage.setItem(GH_GIST_KEY,ghGistId);
   toast('Gist created ✓ Data is now syncing.');
@@ -693,7 +693,7 @@ async function pullFromGist(showToast){
   }
   setSS('spin','Syncing…');
   try{
-    var res=await fetch('https://api.github.com/gists/'+ghGistId,{mode:'cors',headers:{'Authorization':'token '+ghToken,'Accept':'application/vnd.github.v3+json'}});
+    var res=await fetch('https://api.github.com/gists/'+ghGistId,{mode:'cors',headers:{'Authorization':'Bearer '+ghToken,'Accept':'application/vnd.github.v3+json'}});
     if(!res.ok){setSS('warn','Sync failed ('+res.status+') — working offline');return;}
     var g=await res.json();
     var raw=g.files&&g.files['contractor-data.json']&&g.files['contractor-data.json'].content;
@@ -811,7 +811,7 @@ async function pushToGist(showToast){
       setSS('warn','Data too large to sync — images kept locally only');
       return;
     }
-    var res=await fetch('https://api.github.com/gists/'+ghGistId,{mode:'cors',method:'PATCH',headers:{'Authorization':'token '+ghToken,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},body:JSON.stringify({files:{'contractor-data.json':{content:content}}})});
+    var res=await fetch('https://api.github.com/gists/'+ghGistId,{mode:'cors',method:'PATCH',headers:{'Authorization':'Bearer '+ghToken,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},body:JSON.stringify({files:{'contractor-data.json':{content:content}}})});
     if(res.ok){
       _lastEtag=''; // reset ETag so next poll does a full check
       var now=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
@@ -911,7 +911,7 @@ async function checkAndPull(){
   _lastSyncTime=now;
   try{
     // ETag-based check: if nothing changed GitHub returns 304 with no body
-    var headers={'Authorization':'token '+ghToken,'Accept':'application/vnd.github.v3+json'};
+    var headers={'Authorization':'Bearer '+ghToken,'Accept':'application/vnd.github.v3+json'};
     if(_lastEtag)headers['If-None-Match']=_lastEtag;
     var res=await fetch('https://api.github.com/gists/'+ghGistId,{
       mode:'cors',cache:'no-store',headers:headers
