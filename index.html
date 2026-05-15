@@ -179,7 +179,7 @@ select.fi{cursor:pointer;appearance:none;background-image:url("data:image/svg+xm
   <div class="sync-status">
     <div class="sd off" id="sync-dot"></div>
     <span class="sync-txt" id="sync-txt">Initialising…</span>
-    <span style="font-size:10px;color:var(--text3);margin-left:auto;padding-right:4px" title="App version">v15 May 2026 12:22</span>
+    <span style="font-size:10px;color:var(--text3);margin-left:auto;padding-right:4px" title="App version">v15 May 2026 13:15</span>
   </div>
   <div class="sync-acts">
     <button class="btn btn-xs btn-dark" id="btn-signin" onclick="goP('setup');goST('sync')" style="display:none">Connect GitHub</button>
@@ -700,6 +700,15 @@ function saveGHToken(){}
 function resetGist(){toast('No Gist needed with Railway');}
 function copyGistId(){navigator.clipboard.writeText(RAILWAY_URL).then(function(){toast('Railway URL copied ✓');});}
 
+function showGHSignedIn(){
+  var si=document.getElementById('sync-in');if(si)si.classList.remove('hidden');
+  var so=document.getElementById('sync-out');if(so)so.classList.add('hidden');
+}
+function showGHSignedOut(){
+  var si=document.getElementById('sync-in');if(si)si.classList.add('hidden');
+  var so=document.getElementById('sync-out');if(so)so.classList.remove('hidden');
+}
+
 async function ghConnect(){
   var ui=document.getElementById('railway-url-input');
   if(ui&&ui.value.trim())saveRailwayUrl(ui.value.trim());
@@ -772,7 +781,7 @@ function goST(t){
     if(sp)sp.classList.toggle('hidden',x!==t);if(st)st.classList.toggle('on',x===t);
   });
   if(t==='projects')renderPT();if(t==='contacts')renderCT();
-  if(t==='sync'){getGHCreds();var gt=document.getElementById('gh-token');if(gt&&ghToken)gt.value=ghToken;var gi=document.getElementById('gh-gist-input');if(gi&&ghGistId)gi.value=ghGistId;var gd=document.getElementById('gist-id-display');if(gd)gd.textContent=ghGistId||'Not created yet — click Connect GitHub';if(ghToken)showGHSignedIn();}
+  if(t==='sync'){RAILWAY_URL=getRailwayUrl();if(RAILWAY_URL){var ui=document.getElementById('railway-url-input');if(ui)ui.value=RAILWAY_URL;var ud=document.getElementById('railway-url-display');if(ud)ud.textContent=RAILWAY_URL;var gd=document.getElementById('gist-id-display');if(gd)gd.textContent=RAILWAY_URL;showGHSignedIn();}else{showGHSignedOut();}}
 }
 
 // DASHBOARD
