@@ -179,7 +179,7 @@ select.fi{cursor:pointer;appearance:none;background-image:url("data:image/svg+xm
   <div class="sync-status">
     <div class="sd off" id="sync-dot"></div>
     <span class="sync-txt" id="sync-txt">Initialising…</span>
-    <span style="font-size:10px;color:var(--text3);margin-left:auto;padding-right:4px" title="App version">v14 May 2026 16:21</span>
+    <span style="font-size:10px;color:var(--text3);margin-left:auto;padding-right:4px" title="App version">v15 May 2026 12:22</span>
   </div>
   <div class="sync-acts">
     <button class="btn btn-xs btn-dark" id="btn-signin" onclick="goP('setup');goST('sync')" style="display:none">Connect GitHub</button>
@@ -326,102 +326,53 @@ select.fi{cursor:pointer;appearance:none;background-image:url("data:image/svg+xm
       <div class="card-hdr"><span class="card-title">Data &amp; sync — GitHub Gist</span></div>
       <div class="card-body">
 
-        <!-- NOT CONNECTED -->
+        <!-- NOT CONNECTED — RAILWAY -->
         <div id="sync-out">
           <div style="background:var(--hdr);color:var(--hdr-txt);border-radius:var(--r);padding:1.25rem 1.5rem;margin-bottom:1.25rem">
-            <div style="font-family:Georgia,serif;font-size:16px;margin-bottom:6px">Automatic sync via GitHub Gist</div>
-            <div style="font-size:13px;color:rgba(240,237,230,.65);line-height:1.7">Your data is stored as a private file on GitHub. The app automatically loads the latest data every time you open it, and saves every change. Works on PC and Android. No library or CDN required.</div>
+            <div style="font-family:Georgia,serif;font-size:16px;margin-bottom:6px">Real-time sync via Railway</div>
+            <div style="font-size:13px;color:rgba(240,237,230,.65);line-height:1.7">Enter your Railway server URL to enable instant real-time sync across all devices. No GitHub token needed.</div>
           </div>
-
           <div class="ss">
-            <div class="ss-hdr"><span class="sn">1</span> Create a free GitHub account (skip if you have one)</div>
+            <div class="ss-hdr"><span class="sn">1</span> Enter your Railway URL</div>
             <div class="ss-body">
-              <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:.5rem">Go to <a href="https://github.com" target="_blank" style="color:var(--a-txt);font-weight:500">github.com</a> and sign up for a free account. It takes 2 minutes.</div>
-            </div>
-          </div>
-
-          <div class="ss">
-            <div class="ss-hdr"><span class="sn">2</span> Generate a Personal Access Token</div>
-            <div class="ss-body">
-              <div style="font-size:13px;color:var(--text2);line-height:2;margin-bottom:.85rem">
-                <ol style="margin:0 0 0 1.1rem">
-                  <li>Sign in to GitHub and click your profile photo (top right) → <strong>Settings</strong></li>
-                  <li>Scroll to the bottom of the left sidebar → click <strong>Developer settings</strong></li>
-                  <li>Click <strong>Personal access tokens</strong> → <strong>Tokens (classic)</strong></li>
-                  <li>Click <strong>Generate new token (classic)</strong></li>
-                  <li>Give it any name, set expiry to <strong>No expiration</strong></li>
-                  <li>Under <em>Select scopes</em>, check only <strong>gist</strong></li>
-                  <li>Click <strong>Generate token</strong> — copy the token shown (you only see it once)</li>
-                </ol>
-              </div>
-              <label class="fl">Paste your GitHub Personal Access Token</label>
+              <label class="fl">Railway App URL</label>
               <div style="display:flex;gap:8px">
-                <input class="fi" id="gh-token" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" style="flex:1;font-family:monospace;font-size:13px">
-                <button class="btn btn-dark" onclick="saveGHToken()">Save</button>
+                <input class="fi" id="railway-url-input" placeholder="https://your-app.up.railway.app" style="flex:1;font-size:13px">
+                <button class="btn btn-dark" onclick="ghConnect()">Connect</button>
               </div>
-              <div style="font-size:11px;margin-top:6px" id="gh-token-status"></div>
+              <div style="font-size:11px;color:var(--text3);margin-top:6px">This URL is your private access key. Save it somewhere safe.</div>
             </div>
           </div>
-
-          <div class="ss">
-            <div class="ss-hdr"><span class="sn">3</span> Connect and start syncing</div>
-            <div class="ss-body">
-              <div style="font-size:13px;color:var(--text2);margin-bottom:.85rem;line-height:1.6">
-                <strong>First device (PC):</strong> Leave the Gist ID field empty and click Connect — a new Gist is created automatically.<br>
-                <strong>Second device (mobile):</strong> Copy the Gist ID shown after connecting on PC and paste it here before clicking Connect.
-              </div>
-              <label class="fl">Gist ID <span style="font-weight:400;text-transform:none;font-size:11px;color:var(--text3)">(leave empty on first device — copy from PC to mobile)</span></label>
-              <div style="display:flex;gap:8px;margin-bottom:.85rem">
-                <input class="fi" id="gh-gist-input" placeholder="e.g. a1b2c3d4e5f6..." style="flex:1;font-family:monospace;font-size:13px">
-                <button class="btn" onclick="copyGistId()" id="btn-copy-gist" style="display:none">Copy ID</button>
-              </div>
-              <button class="btn btn-dark" onclick="ghConnect()">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-                Connect GitHub
-              </button>
-            </div>
-          </div>
-
           <details style="margin-top:.5rem">
-            <summary style="font-size:12px;color:var(--text3);cursor:pointer;padding:.4rem 0;user-select:none">Manual backup (export / import)</summary>
+            <summary style="font-size:12px;color:var(--text3);cursor:pointer;padding:.4rem 0;user-select:none">Manual backup</summary>
             <div style="display:flex;gap:8px;flex-wrap:wrap;padding:.75rem 0">
               <button class="btn btn-sm" onclick="exportData()">&#8595; Export data.json</button>
               <label class="btn btn-sm" style="cursor:pointer;position:relative">&#8593; Import data.json<input type="file" accept=".json" onchange="importData(this)" style="position:absolute;opacity:0;inset:0;cursor:pointer"></label>
             </div>
           </details>
         </div>
-
         <!-- CONNECTED -->
         <div id="sync-in" class="hidden">
           <div style="border:1px solid var(--d-brd);background:var(--d-bg);border-radius:var(--r);padding:1rem 1.15rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:10px">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8" stroke="var(--d-txt)" stroke-width="1.5"/><path d="M5.5 9l2.5 2.5 5-5" stroke="var(--d-txt)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <div style="flex:1">
-              <div style="font-size:13px;font-weight:500;color:var(--d-txt)">GitHub sync active</div>
-              <div style="font-size:12px;color:var(--d-txt);opacity:.75" id="gh-user"></div>
-            </div>
+            <div style="flex:1"><div style="font-size:13px;font-weight:500;color:var(--d-txt)">Railway sync active — real-time</div><div style="font-size:11px;color:var(--d-txt);opacity:.75;word-break:break-all" id="railway-url-display"></div></div>
             <button class="btn btn-sm btn-danger" onclick="ghDisconnect()">Disconnect</button>
           </div>
-          <!-- Gist ID share box — always visible when signed in -->
-          <div style="background:#FBF5E6;border:2px solid #E8D49A;border-radius:var(--r);padding:1rem 1.1rem;margin-bottom:1rem">
-            <div style="font-size:11px;font-weight:700;color:#7A5C18;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">&#128279; Your Gist ID — needed to sync your other device</div>
-            <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
-              <code id="gist-id-display" style="flex:1;font-size:13px;font-weight:600;background:#fff;padding:9px 12px;border-radius:6px;border:1px solid #E8D49A;color:#18160F;word-break:break-all">Loading...</code>
-              <button class="btn btn-dark" onclick="copyGistId()" id="btn-copy-gist2" style="flex-shrink:0">&#128203; Copy ID</button>
-            </div>
-            <div style="font-size:12px;color:#7A5C18;line-height:1.6">
-              <strong>To sync your other device:</strong> Open app → Setup → Data &amp; Sync → paste this ID in the Gist ID field (Step 3) → Connect GitHub
+          <div style="background:#FBF5E6;border:2px solid #E8D49A;border-radius:var(--r);padding:.85rem 1rem;margin-bottom:1rem">
+            <div style="font-size:11px;font-weight:700;color:#7A5C18;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px">&#128279; Your Railway URL — use on all devices</div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <code id="gist-id-display" style="flex:1;font-size:11px;background:#fff;padding:8px 10px;border-radius:6px;border:1px solid #E8D49A;color:#18160F;word-break:break-all"></code>
+              <button class="btn btn-dark" onclick="copyGistId()" style="flex-shrink:0">&#128203; Copy</button>
             </div>
           </div>
           <div style="font-size:13px;color:var(--text2);line-height:2;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:.85rem 1rem;margin-bottom:1rem">
-            <strong>How it works:</strong><br>
-            &#10003; Open app on any device &#8594; pulls latest data automatically<br>
-            &#10003; Make any change &#8594; saved to GitHub within 2 seconds<br>
-            &#10003; Open on another device &#8594; always gets the latest version
+            ✓ Changes sync <strong>instantly</strong> to all devices<br>
+            ✓ Photos and all data on your private Railway server<br>
+            ✓ Works offline — syncs when reconnected
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem">
-            <button class="btn btn-dark" onclick="pullFromGist(true)">&#8595; Pull latest now</button>
-            <button class="btn btn-danger btn-sm" onclick="resetGist()" style="font-size:11px">Reset corrupted Gist</button>
-            <button class="btn" onclick="pushToGist(true)">&#8593; Push now</button>
+            <button class="btn btn-dark" onclick="pullFromRailway(true)">&#8595; Pull now</button>
+            <button class="btn" onclick="pushToRailway(true)">&#8593; Push now</button>
           </div>
           <details>
             <summary style="font-size:12px;color:var(--text3);cursor:pointer;padding:.4rem 0;user-select:none">Manual backup</summary>
@@ -430,7 +381,7 @@ select.fi{cursor:pointer;appearance:none;background-image:url("data:image/svg+xm
               <label class="btn btn-sm" style="cursor:pointer;position:relative">&#8593; Import data.json<input type="file" accept=".json" onchange="importData(this)" style="position:absolute;opacity:0;inset:0;cursor:pointer"></label>
             </div>
           </details>
-        </div>      </div>
+        </div>        </div>      </div>
     </div>
   </div>
 
@@ -644,340 +595,140 @@ var SC=['Files.ReadWrite','User.Read'];
 // =============================================================
 // GITHUB GIST SYNC
 // =============================================================
-var GH_TOKEN_KEY='ctm-gh-token', GH_GIST_KEY='ctm-gh-gist';
-var ghToken=null, ghGistId=null, pushTimer=null;
+// ── RAILWAY SYNC ─────────────────────────────────────────────
+var RAILWAY_URL=localStorage.getItem('ctm-railway-url')||'';
+var _sseSource=null;
+var _lastSyncTime=0;
+var _syncTicker=null;
+var pushTimer=null;
 
-function getGHCreds(){ghToken=localStorage.getItem(GH_TOKEN_KEY)||null;ghGistId=localStorage.getItem(GH_GIST_KEY)||null;}
+function getPendingPush(){return localStorage.getItem('ctm-pending-push')==='1';}
+function setPendingPush(v){if(v)localStorage.setItem('ctm-pending-push','1');else localStorage.removeItem('ctm-pending-push');}
+function getRailwayUrl(){return localStorage.getItem('ctm-railway-url')||'';}
+function saveRailwayUrl(url){url=(url||'').trim().replace(/\/+$/,'');localStorage.setItem('ctm-railway-url',url);RAILWAY_URL=url;}
 
-function saveGHToken(){
-  var tok=(document.getElementById('gh-token').value||'').trim();
-  if(!tok||tok.length<20){toast('Enter a valid token.');return;}
-  localStorage.setItem(GH_TOKEN_KEY,tok);ghToken=tok;
-  var s=document.getElementById('gh-token-status');s.textContent='✓ Token saved — click Connect below.';s.style.color='var(--d-txt)';
-  toast('Token saved ✓');
-}
-
-async function ghConnect(){
-  getGHCreds();
-  if(!ghToken){toast('Paste your GitHub token first.');return;}
-  // Check if user manually entered a Gist ID
-  var inputEl=document.getElementById('gh-gist-input');
-  if(inputEl&&inputEl.value.trim()){
-    ghGistId=inputEl.value.trim();
-    localStorage.setItem(GH_GIST_KEY,ghGistId);
-  }
-  setSS('spin','Connecting to GitHub…');
+async function pushToRailway(showToast){
+  if(!RAILWAY_URL)return;
+  if(!navigator.onLine){setPendingPush(true);setSS('warn','⚠ Offline — saved locally');return;}
   try{
-    var res=await fetch('https://api.github.com/user',{mode:'cors',headers:{'Authorization':'Bearer '+ghToken,'Accept':'application/vnd.github.v3+json'}});
-    if(!res.ok){setSS('warn','Invalid token — check it has gist scope');toast('Token error: '+res.status);return;}
-    var user=await res.json();
-    if(ghGistId){await pullFromGist(false);}else{await createGist();}
-    onGHConnected(user.login);
-  }catch(e){setSS('warn','Connection failed — check internet connection');toast('Error: '+e.message);}
+    var res=await fetch(RAILWAY_URL+'/api/data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({data:S})});
+    if(res.ok){
+      var j=await res.json();_lastSyncTime=new Date(j.updated_at).getTime();
+      setSS('ok','✓ Saved at '+new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}));
+      if(showToast)toast('Saved ✓');
+    }else{setSS('warn','Save failed ('+res.status+')');setPendingPush(true);}
+  }catch(e){setSS('warn','⚠ Offline — saved locally');setPendingPush(true);}
 }
 
-async function createGist(){
-  var res=await fetch('https://api.github.com/gists',{mode:'cors',method:'POST',headers:{'Authorization':'Bearer '+ghToken,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},body:JSON.stringify({description:'Contractor Monitor Data',public:false,files:{'contractor-data.json':{content:JSON.stringify(S,null,2)}}})});
-  if(!res.ok)throw new Error('Could not create gist: '+res.status);
-  var g=await res.json();ghGistId=g.id;localStorage.setItem(GH_GIST_KEY,ghGistId);
-  toast('Gist created ✓ Data is now syncing.');
-}
-
-async function pullFromGist(showToast){
-  getGHCreds();if(!ghToken||!ghGistId)return;
-  // Offline — skip silently
-  if(!navigator.onLine){
-    setSS('warn','⚠ Offline — working from local data');
-    if(showToast)toast('No internet — using local data',3000);
-    return;
-  }
+async function pullFromRailway(showToast){
+  if(!RAILWAY_URL)return;
+  if(!navigator.onLine){setSS('warn','⚠ Offline — working from local data');return;}
   setSS('spin','Syncing…');
   try{
-    var res=await fetch('https://api.github.com/gists/'+ghGistId,{mode:'cors',headers:{'Authorization':'Bearer '+ghToken,'Accept':'application/vnd.github.v3+json'}});
-    if(!res.ok){setSS('warn','Sync failed ('+res.status+') — working offline');return;}
-    var g=await res.json();
-    var raw=g.files&&g.files['contractor-data.json']&&g.files['contractor-data.json'].content;
-    if(raw){
-      var pulled=JSON.parse(raw);
-      // Read local data for merge + image restoration
-      var localS=null;
-      try{
-        var lrDb=await openDB();
-        localS=await new Promise(function(rv){
-          var tx=lrDb.transaction(IDB_STORE,'readonly');
-          var req=tx.objectStore(IDB_STORE).get(IDB_KEY);
-          req.onsuccess=function(e){rv(e.target.result||null);};
-          req.onerror=function(){rv(null);};
-        });
-      }catch(e){}
-
-      var merged=Object.assign(
-        {firm:{name:'Your Firm Name',sub:'Project Management',phone:'',email:'',addr:'',logo:null},
-         projects:[],contacts:[],tasks:[]},
-        pulled
-      );
-
-      if(localS){
-        // 1. Keep tasks added offline (local-only) but NOT if they were deleted on remote
-        var remoteTombstones=pulled._deleted||{};
-        var localTombstones=localS._deleted||{};
-        // Merge tombstones — keep the most recent
-        var allTombstones=Object.assign({},localTombstones,remoteTombstones);
-        merged._deleted=allTombstones;
-        if(localS.tasks){
-          localS.tasks.forEach(function(lt){
-            var inRemote=merged.tasks.find(function(rt){return rt.id===lt.id;});
-            var isDeleted=allTombstones[lt.id]; // deleted on some device
-            if(!inRemote&&!isDeleted){
-              merged.tasks.push(lt); // truly offline-added task
-            }
-          });
-        }
-        // Remove any tasks that have been tombstoned
-        merged.tasks=merged.tasks.filter(function(t){return !allTombstones[t.id];});
-        // 2. Restore logo
-        if((merged.firm.logo==='[logo stored locally]'||merged.firm.logo==='[local]')&&localS.firm&&localS.firm.logo){
-          merged.firm.logo=localS.firm.logo;
-        }
-        // 3. Restore images stripped before push
-        merged.tasks=merged.tasks.map(function(pt){
-          var lt=localS.tasks&&localS.tasks.find(function(t){return t.id===pt.id;});
-          if(lt&&pt.attachments){
-            pt.attachments=pt.attachments.map(function(pa,ai){
-              if((pa.hasLocalData||pa.hasLocalImage)&&lt.attachments&&lt.attachments[ai]&&lt.attachments[ai].data){
-                return lt.attachments[ai];
-              }
-              return pa;
-            });
-          }
-          return pt;
-        });
-      }
-
-      S=merged;
-      saveLocal();updNav();
-      var pg=document.querySelector('.htab.on');
-      goP(pg?pg.id.replace('nt-',''):'dash');
-      var now=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
-      _lastSyncTime=Date.now();_lastEtag=''; // will re-fetch ETag on next check
-      setSS('ok','✓ Synced at '+now);
+    var res=await fetch(RAILWAY_URL+'/api/data',{cache:'no-store'});
+    if(!res.ok){setSS('warn','Pull failed ('+res.status+')');return;}
+    var j=await res.json();
+    if(j.data&&Object.keys(j.data).length>0){
+      S=Object.assign({firm:{name:'Your Firm Name',sub:'Project Management',phone:'',email:'',addr:'',logo:null},projects:[],contacts:[],tasks:[],_deleted:{}},j.data);
+      saveLocal();updNav();var pg=document.querySelector('.htab.on');goP(pg?pg.id.replace('nt-',''):'dash');
+      _lastSyncTime=new Date(j.updated_at).getTime();
+      setSS('ok','✓ Synced at '+new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}));
       if(showToast)toast('Synced ✓');
-      // Push merged data back so other devices get offline-added tasks
-      if(getPendingPush()||localS&&localS.tasks&&localS.tasks.length>(pulled.tasks||[]).length){
-        setPendingPush(false);
-        setTimeout(function(){pushToGist(false);},1500);
-      }
-    }
-  }catch(e){
-    if(!navigator.onLine||e.message.includes('fetch')||e.message.includes('Failed')){
-      setSS('warn','⚠ No internet — working from local data');
-      if(showToast)toast('No internet — changes saved locally',3000);
-    }else{
-      var em=e.message||'';
-      if(em.includes('JSON')||em.includes('Unterminated')||em.includes('position')){
-        setSS('warn','⚠ Gist corrupted — press Reset button');
-        var rb=document.getElementById('btn-reset-gist');if(rb)rb.style.display='inline-flex';
-        var pb=document.getElementById('btn-pull');if(pb)pb.style.display='none';
-        if(showToast)toast('Gist corrupted — press Reset button in sync bar',5000);
-      }else{
-        setSS('warn','Sync error: '+em);if(showToast)toast('Sync error: '+em,4000);
-      }
-    }
-  }
-}
-async function pushToGist(showToast){
-  getGHCreds();if(!ghToken)return;
-  if(!ghGistId){await createGist();return;}
-  if(!navigator.onLine){
-    setPendingPush(true);
-    setSS('warn','⚠ Offline — saved locally, will sync when reconnected');
-    return;
-  }
-  try{
-    var payload=JSON.parse(JSON.stringify(S));
-    // Clean tombstones older than 30 days
-    if(payload._deleted){
-      var cutoff=Date.now()-30*24*60*60*1000;
-      Object.keys(payload._deleted).forEach(function(id){
-        if(payload._deleted[id]<cutoff)delete payload._deleted[id];
-      });
-    }
-    payload.tasks=(payload.tasks||[]).map(function(t){var tc=Object.assign({},t);tc.attachments=(t.attachments||[]).map(function(a){if(a.data){return{name:a.name,type:a.type,caption:a.caption||'',origW:a.origW||0,origH:a.origH||0,hasLocalData:true};}return a;});return tc;});if(payload.firm&&payload.firm.logo){payload.firm=Object.assign({},payload.firm,{logo:'[local]'});}
-    // Hard safety strip — remove ANY base64 data that slipped through
-    function stripBinary(obj){if(!obj||typeof obj!=='object')return obj;if(Array.isArray(obj))return obj.map(stripBinary);var r={};Object.keys(obj).forEach(function(k){var v=obj[k];if(typeof v==='string'&&v.length>500&&v.indexOf(';base64,')>-1){r[k]='[stripped]';}else if(typeof v==='object'){r[k]=stripBinary(v);}else{r[k]=v;}});return r;}
-    payload=stripBinary(payload);
-    var content=JSON.stringify(payload,null,2);
-    if(content.length>8*1024*1024){
-      setSS('warn','Data too large to sync — images kept locally only');
-      return;
-    }
-    var res=await fetch('https://api.github.com/gists/'+ghGistId,{mode:'cors',method:'PATCH',headers:{'Authorization':'Bearer '+ghToken,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},body:JSON.stringify({files:{'contractor-data.json':{content:content}}})});
-    if(res.ok){
-      _lastEtag=''; // reset ETag so next poll does a full check
-      var now=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
-      setSS('ok','✓ Saved at '+now);
-      if(showToast)toast('Pushed ✓');
-    }else{
-      setSS('warn','Sync failed ('+res.status+') — saved locally');
-      if(showToast)toast('Sync failed ('+res.status+')');
-    }
-  }catch(e){
-    if(e.message&&e.message.includes('fetch')||!navigator.onLine){
-      setPendingPush(true);
-      setSS('warn','⚠ Offline — saved locally, will sync when reconnected');
-    }else{
-      setSS('warn','Sync error: '+e.message);
-    }
-  }
+    }else{setSS('warn','No server data — pushing local data…');await pushToRailway(false);}
+  }catch(e){setSS('warn','⚠ No internet — working from local data');if(showToast)toast('No internet',3000);}
 }
 
-function resetGist(){
-  ghGistId=null;
-  localStorage.removeItem(GH_GIST_KEY);
-  setSS('spin','Creating new Gist…');
-  toast('Resetting… please wait',2000);
-  createGist().then(function(){
-    var gd=document.getElementById('gist-id-display');
-    if(gd)gd.textContent=ghGistId||'';
-    var gi=document.getElementById('gh-gist-input');
-    if(gi)gi.value=ghGistId||'';
-    setSS('ok','✓ New Gist created — sync restored');
-    toast('Gist reset ✓  Share the new Gist ID with your other device',4000);
-  }).catch(function(e){
-    setSS('warn','Reset failed: '+e.message);
-    toast('Reset failed: '+e.message,4000);
-  });
+function startSSE(){
+  if(!RAILWAY_URL)return;
+  if(_sseSource){_sseSource.close();_sseSource=null;}
+  try{
+    _sseSource=new EventSource(RAILWAY_URL+'/api/sync');
+    _sseSource.onmessage=function(e){
+      try{var m=JSON.parse(e.data);if(m.type==='update'&&new Date(m.updated_at).getTime()>_lastSyncTime+1000)pullFromRailway(false);}catch(ex){}
+    };
+    _sseSource.onerror=function(){if(_sseSource){_sseSource.close();_sseSource=null;}setTimeout(startSSE,10000);};
+  }catch(e){}
 }
+function stopSSE(){if(_sseSource){_sseSource.close();_sseSource=null;}}
+
+function startPeriodicSync(){
+  if(_syncTicker)clearInterval(_syncTicker);
+  _syncTicker=setInterval(function(){
+    if(navigator.onLine&&!document.hidden&&RAILWAY_URL&&(!_sseSource||_sseSource.readyState===2))checkAndPull();
+  },30000);
+}
+
+async function checkAndPull(){
+  if(!RAILWAY_URL||!navigator.onLine)return;
+  if(getPendingPush()){setPendingPush(false);await pushToRailway(false);return;}
+  var now=Date.now();if(now-_lastSyncTime<15000)return;
+  try{
+    var r=await fetch(RAILWAY_URL+'/api/ping',{cache:'no-store'});if(!r.ok)return;
+    var j=await r.json();
+    if(new Date(j.updated_at).getTime()>_lastSyncTime+1000)pullFromRailway(false);else _lastSyncTime=now;
+  }catch(e){}
+}
+
+document.addEventListener('visibilitychange',function(){
+  if(!document.hidden&&navigator.onLine&&RAILWAY_URL){
+    setTimeout(function(){if(getPendingPush()){setPendingPush(false);pushToRailway(false);}else checkAndPull();},500);
+  }
+});
+window.addEventListener('online',function(){
+  setSS('spin','Back online — syncing…');toast('Back online — syncing…',2000);
+  if(getPendingPush()){setPendingPush(false);pushToRailway(false).then(function(){setTimeout(function(){pullFromRailway(false);},1000);});}
+  else pullFromRailway(false);
+  startSSE();
+});
+window.addEventListener('offline',function(){
+  clearTimeout(pushTimer);if(typeof _syncTicker!=='undefined')clearInterval(_syncTicker);stopSSE();
+  setSS('warn','⚠ No internet — working from local data');toast('No internet — changes saved locally',3000);
+});
 
 function schedulePush(){
   clearTimeout(pushTimer);
   if(!navigator.onLine){setPendingPush(true);setSS('warn','⚠ Offline — saved locally');return;}
-  // Push faster (800ms) to reduce chance of appearing before connection confirmed
-  pushTimer=setTimeout(function(){
-    pushToGist(false).catch(function(){
-      // If push fails, mark as pending so online event picks it up
-      setPendingPush(true);
-    });
-  },800);
-}window.addEventListener('online',function(){
-  var hasPending=getPendingPush();
-  setSS('spin','Back online — syncing…');
-  toast('Back online — syncing…',2000);
-  if(hasPending&&ghToken&&ghGistId){
-    setPendingPush(false);
-    pushToGist(false).then(function(){
-      setTimeout(function(){pullFromGist(false);},1500);
-    }).catch(function(){setPendingPush(true);});
-  }else if(ghToken&&ghGistId){
-    pullFromGist(false);
-  }
-});
-window.addEventListener('offline',function(){
-  clearTimeout(pushTimer);
-  if(typeof _syncTicker!=='undefined')clearInterval(_syncTicker);
-  setSS('warn','⚠ No internet — working from local data');
-  toast('No internet — changes saved locally',3000);
-});
-
-// ── Background sync ─────────────────────────────────────────
-var _lastSyncTime=0;
-var _syncTicker=null;
-// pendingPush persisted in localStorage so it survives app restart/refresh
-function getPendingPush(){return localStorage.getItem('ctm-pending-push')==='1';}
-function setPendingPush(val){if(val)localStorage.setItem('ctm-pending-push','1');else localStorage.removeItem('ctm-pending-push');}
-
-function startPeriodicSync(){
-  if(_syncTicker)clearInterval(_syncTicker);
-  // Check every 30 seconds
-  _syncTicker=setInterval(function(){
-    if(navigator.onLine&&!document.hidden&&ghToken&&ghGistId){
-      checkAndPull();
-    }
-  },15000);
+  setSS('spin','Saving…');
+  pushTimer=setTimeout(function(){pushToRailway(false);},800);
 }
 
-async function checkAndPull(){
-  getGHCreds();
-  if(!ghToken||!ghGistId||!navigator.onLine)return;
-  // Push pending changes first
-  if(getPendingPush()){
-    setPendingPush(false);
-    await pushToGist(false);
-    return;
-  }
-  // Throttle: min 12s between checks
-  var now=Date.now();
-  if(now-_lastSyncTime<12000)return;
-  _lastSyncTime=now;
+// Compatibility
+function pullFromGist(s){return pullFromRailway(s);}
+function pushToGist(s){return pushToRailway(s);}
+function getGHCreds(){}
+function saveGHToken(){}
+function resetGist(){toast('No Gist needed with Railway');}
+function copyGistId(){navigator.clipboard.writeText(RAILWAY_URL).then(function(){toast('Railway URL copied ✓');});}
+
+async function ghConnect(){
+  var ui=document.getElementById('railway-url-input');
+  if(ui&&ui.value.trim())saveRailwayUrl(ui.value.trim());
+  if(!RAILWAY_URL){toast('Enter your Railway URL first');return;}
+  setSS('spin','Connecting…');
   try{
-    // ETag-based check: if nothing changed GitHub returns 304 with no body
-    var headers={'Authorization':'Bearer '+ghToken,'Accept':'application/vnd.github.v3+json'};
-    if(_lastEtag)headers['If-None-Match']=_lastEtag;
-    var res=await fetch('https://api.github.com/gists/'+ghGistId,{
-      mode:'cors',cache:'no-store',headers:headers
-    });
-    if(res.status===304){setSS('ok','✓ Up to date');return;}
-    if(!res.ok)return;
-    var etag=res.headers.get('ETag')||'';
-    if(etag)_lastEtag=etag;
-    var g=await res.json();
-    var remoteTs=new Date(g.updated_at||0).getTime();
-    if(remoteTs>(_lastSyncTime-12000)+1000){pullFromGist(false);}
-  }catch(e){}
+    var res=await fetch(RAILWAY_URL+'/health');
+    if(!res.ok)throw new Error('Server error '+res.status);
+    onRailwayConnected();pullFromRailway(false);
+  }catch(e){setSS('warn','Cannot reach Railway — check URL');toast('Connection failed: '+e.message,4000);}
 }
-// Sync when app comes to foreground
-document.addEventListener('visibilitychange',function(){
-  if(!document.hidden&&navigator.onLine&&ghToken&&ghGistId){
-    // Small delay to let the app settle
-    setTimeout(function(){
-      if(getPendingPush()){setPendingPush(false);pushToGist(false);}
-      else checkAndPull();
-    },800);
-  }
-});
 
-function onGHConnected(username){
-  document.getElementById('gh-user').textContent='Connected as '+username;
+function onRailwayConnected(){
   showGHSignedIn();
-  var gd=document.getElementById('gist-id-display');if(gd&&ghGistId)gd.textContent=ghGistId;
-  var bcg=document.getElementById('btn-copy-gist');if(bcg)bcg.style.display='inline-flex';
-  var gi=document.getElementById('gh-gist-input');if(gi&&ghGistId)gi.value=ghGistId;
+  var ud=document.getElementById('railway-url-display');if(ud)ud.textContent=RAILWAY_URL;
+  var gd=document.getElementById('gist-id-display');if(gd)gd.textContent=RAILWAY_URL;
   document.getElementById('btn-signin').style.display='none';
   document.getElementById('btn-pull').style.display='inline-flex';
   document.getElementById('btn-signout').style.display='inline-flex';
-  setSS('ok','✓ GitHub sync active — '+username);
-  startPeriodicSync(); // start 45s background sync
+  setSS('ok','✓ Railway connected — real-time sync active');
+  startSSE();startPeriodicSync();
 }
 
-function copyGistId(){
-  if(!ghGistId){toast('No Gist ID yet — connect first.');return;}
-  navigator.clipboard.writeText(ghGistId).then(function(){
-    toast('Gist ID copied ✓ Paste it on your other device in Setup → Data & Sync → Step 3');
-  }).catch(function(){
-    // Fallback for older browsers
-    var el=document.createElement('textarea');
-    el.value=ghGistId;document.body.appendChild(el);el.select();
-    document.execCommand('copy');document.body.removeChild(el);
-    toast('Gist ID copied ✓');
-  });
-}
 function ghDisconnect(){
-  if(!confirm('Disconnect GitHub sync? Your local data is kept.'))return;
-  localStorage.removeItem(GH_TOKEN_KEY);localStorage.removeItem(GH_GIST_KEY);
-  ghToken=null;ghGistId=null;showGHSignedOut();
-  setSS('warn','Saved locally — reconnect to sync');toast('Disconnected.');
+  stopSSE();if(_syncTicker)clearInterval(_syncTicker);
+  RAILWAY_URL='';localStorage.removeItem('ctm-railway-url');
+  showGHSignedOut();setSS('off','Disconnected — saved locally');
 }
-function showGHSignedIn(){
-  var o=document.getElementById('sync-out'),i=document.getElementById('sync-in');
-  if(o)o.classList.add('hidden');if(i)i.classList.remove('hidden');
-  // Always populate Gist ID from storage when showing the signed-in panel
-  getGHCreds();
-  var gd=document.getElementById('gist-id-display');
-  if(gd) gd.textContent=ghGistId||'Not created yet — click Connect GitHub';
-  var gi=document.getElementById('gh-gist-input');
-  if(gi&&ghGistId) gi.value=ghGistId;
-}
-function showGHSignedOut(){var o=document.getElementById('sync-out'),i=document.getElementById('sync-in');if(o)o.classList.remove('hidden');if(i)i.classList.add('hidden');document.getElementById('btn-signin').style.display='inline-flex';document.getElementById('btn-pull').style.display='none';document.getElementById('btn-signout').style.display='none';}
+
 
 // EXPORT / IMPORT
 function exportData(){var b=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download='contractor-data.json';a.click();URL.revokeObjectURL(u);toast('Exported ✓');}
@@ -985,10 +736,14 @@ function importData(input){var f=input.files[0];if(!f)return;var r=new FileReade
 
 // SAVE — async, never blocks UI
 function save(){
-  saveLocal(); // async IndexedDB write — fire and forget
-  getGHCreds();
-  if(ghToken){if(navigator.onLine){schedulePush();}else{setPendingPush(true);setSS('warn','⚠ Offline — saved locally');}}
-  else{setSS('warn','Saved locally — connect GitHub to sync across devices');document.getElementById('btn-signin').style.display='inline-flex';}
+  saveLocal();
+  if(RAILWAY_URL){
+    if(navigator.onLine){schedulePush();}
+    else{setPendingPush(true);setSS('warn','⚠ Offline — saved locally');}
+  }else{
+    setSS('warn','Saved locally — connect Railway in Setup → Data & Sync');
+    document.getElementById('btn-signin').style.display='inline-flex';
+  }
 }
 // UTILITIES
 function uid(){return Date.now().toString(36)+Math.random().toString(36).substr(2,4);}
@@ -1102,57 +857,26 @@ function onTMP(pre){var pid=document.getElementById('tm-proj').value;var cs=pid?
 var capQueue = []; // queue of {name, data, type} waiting for captions
 // Compress + orient image: max 1200px, JPEG 65% — brings 4MB photo to ~150KB
 function compressAndOrient(dataUrl, callback) {
-  var img = new Image();
-  img.onload = function() {
-    var w=img.naturalWidth||img.width, h=img.naturalHeight||img.height;
-    var orientation=1;
-    try{
-      var bin=atob(dataUrl.split(',')[1]);
-      var bytes=new Uint8Array(bin.length);
-      for(var i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
-      var view=new DataView(bytes.buffer);
-      if(view.getUint16(0,false)===0xFFD8){
-        var off=2;
-        while(off<bytes.length-4){
-          var mk=view.getUint16(off,false);off+=2;
-          if(mk===0xFFE1){
-            if(view.getUint32(off+2,false)===0x45786966){
-              var le=view.getUint16(off+8,false)===0x4949;
-              var ifd=off+8+view.getUint32(off+12,le);
-              var tags=view.getUint16(ifd,le);
-              for(var t=0;t<tags;t++){if(view.getUint16(ifd+2+t*12,le)===0x0112){orientation=view.getUint16(ifd+2+t*12+8,le);break;}}
-            }
-            break;
-          }
-          if((mk&0xFF00)!==0xFF00)break;
-          off+=view.getUint16(off,false);
-        }
+  fixImageOrientation(dataUrl, function(oriented, ow, oh) {
+    var MAX = 1200;
+    var img = new Image();
+    img.onload = function() {
+      var w = img.width, h = img.height;
+      if (w <= MAX && h <= MAX && dataUrl.length < 200*1024) {
+        // Already small enough — just pass through
+        callback(oriented, w, h); return;
       }
-    }catch(ex){}
-    var MAX=1200;
-    var sw=(orientation>=5&&orientation<=8)?h:w;
-    var sh=(orientation>=5&&orientation<=8)?w:h;
-    var scale=Math.min(MAX/sw,MAX/sh,1);
-    var cw=Math.round(sw*scale),ch=Math.round(sh*scale);
-    var cv=document.createElement('canvas');cv.width=cw;cv.height=ch;
-    var ctx=cv.getContext('2d');
-    ctx.save();
-    switch(orientation){
-      case 2:ctx.transform(-1,0,0,1,cw,0);break;
-      case 3:ctx.transform(-1,0,0,-1,cw,ch);break;
-      case 4:ctx.transform(1,0,0,-1,0,ch);break;
-      case 5:ctx.transform(0,1,1,0,0,0);break;
-      case 6:ctx.transform(0,1,-1,0,ch,0);break;
-      case 7:ctx.transform(0,-1,-1,0,ch,cw);break;
-      case 8:ctx.transform(0,-1,1,0,0,cw);break;
-    }
-    if(orientation>=5&&orientation<=8){ctx.drawImage(img,0,0,w*scale,h*scale);}
-    else{ctx.drawImage(img,0,0,cw,ch);}
-    ctx.restore();
-    callback(cv.toDataURL('image/jpeg',0.72),cw,ch);
-  };
-  img.onerror=function(){callback(dataUrl,0,0);};
-  img.src=dataUrl;
+      var scale = Math.min(MAX/w, MAX/h, 1);
+      var cw = Math.round(w * scale), ch = Math.round(h * scale);
+      var cv = document.createElement('canvas');
+      cv.width = cw; cv.height = ch;
+      var ctx = cv.getContext('2d');
+      ctx.drawImage(img, 0, 0, cw, ch);
+      var compressed = cv.toDataURL('image/jpeg', 0.65);
+      callback(compressed, cw, ch);
+    };
+    img.src = oriented;
+  });
 }
 
 function processImageFiles(files) {
@@ -1477,42 +1201,29 @@ async function sharePDF(){
         if(meta.length){doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(130,130,130);doc.text(meta.join('  ·  '),M+5,y);y+=5;}
         // Description
         if(t.desc){checkPage(8);doc.setFontSize(8.5);doc.setFont('helvetica','italic');doc.setTextColor(70,70,70);if(hasArabic(t.desc)){var di=textToImgData(t.desc,8.5,W-M*2-10,'#464646');try{doc.addImage(di.data,'JPEG',M+5,y-2,di.w,di.h,'','FAST');}catch(e){}y+=di.h+1;}else{var dlines=doc.splitTextToSize(t.desc,W-M*2-8);doc.text(dlines,M+5,y);y+=dlines.length*5.5;}}
-        // ATTACHMENTS — photos + PDF boxes + files
-        var atts=(t.attachments||[]).filter(function(a){return a.data;});
-        if(atts.length){
-          checkPage(44);
-          var ix=M+3,maxImgW=50,maxImgH=50,rowH=0;
-          atts.forEach(function(a){
-            var isImg=a.type&&a.type.startsWith('image/');
-            var isPdf=a.type&&a.type.includes('pdf')||a.name.toLowerCase().slice(-4)==='.pdf';
-            if(isImg){
-              var r=(a.origW||100)/(a.origH||100);
-              var iw=r>1?maxImgW:Math.round(maxImgH*r),ih=r>1?Math.round(maxImgW/r):maxImgH;
-              if(ix+iw>W-M){ix=M+3;y+=rowH+6;rowH=0;checkPage(ih+10);}
-              try{
-                doc.addImage(a.data,'JPEG',ix,y,iw,ih,'','FAST');
-                if(a.caption){doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(100,100,100);doc.text(doc.splitTextToSize(a.caption,iw),ix,y+ih+3);}
-                rowH=Math.max(rowH,ih+6);ix+=iw+4;
-              }catch(e){}
-            }else if(isPdf){
-              var bw=46,bh=16;
-              if(ix+bw>W-M){ix=M+3;y+=rowH+4;rowH=0;checkPage(bh+6);}
-              doc.setFillColor(232,237,248);doc.roundedRect(ix,y,bw,bh,2,2,'F');
-              doc.setDrawColor(168,196,224);doc.roundedRect(ix,y,bw,bh,2,2,'S');
-              doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.setTextColor(26,74,122);
-              doc.text('PDF',ix+2.5,y+5.5);
-              doc.setFontSize(6.5);doc.setFont('helvetica','normal');
-              doc.text(doc.splitTextToSize(a.name.replace(/\.pdf$/i,''),bw-8).slice(0,2),ix+2.5,y+10);
-              rowH=Math.max(rowH,bh+4);ix+=bw+4;
-            }else{
-              if(ix+38>W-M){ix=M+3;y+=rowH+4;rowH=0;checkPage(12);}
-              doc.setFillColor(240,237,230);doc.roundedRect(ix,y,36,10,2,2,'F');
-              doc.setFontSize(6.5);doc.setFont('helvetica','normal');doc.setTextColor(60,60,60);
-              doc.text(a.name.slice(0,16),ix+2,y+7);
-              rowH=Math.max(rowH,12);ix+=40;
-            }
+        // ATTACHMENTS — images embedded
+        var imgs=(t.attachments||[]).filter(function(a){return a.type&&a.type.startsWith('image/')&&a.data;});
+        if(imgs.length){
+          checkPage(42);
+          var ix=M+3,maxImgW=50,maxImgH=50;
+          imgs.forEach(function(a){
+            // Calculate correct dimensions preserving aspect ratio
+            var natW=a.origW||100,natH=a.origH||100;
+            var ratio=natW/natH;
+            var imgW,imgH;
+            if(ratio>1){imgW=maxImgW;imgH=Math.round(maxImgW/ratio);}
+            else{imgH=maxImgH;imgW=Math.round(maxImgH*ratio);}
+            if(ix+imgW>W-M){ix=M+3;y+=maxImgH+12;checkPage(maxImgH+14);}
+            try{
+              // Photo already compressed on import — use directly
+              doc.addImage(a.data,'JPEG',ix,y,imgW,imgH,'','FAST');
+              if(a.caption){doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(100,100,100);
+                if(hasArabic(a.caption)){var ci=textToImgData(a.caption,7,imgW,'#646464');try{doc.addImage(ci.data,'JPEG',ix,y+imgH+1,ci.w,ci.h,'','FAST');}catch(e){}}
+                else{var clines=doc.splitTextToSize(a.caption,imgW);doc.text(clines,ix,y+imgH+3);}}
+              ix+=imgW+4;
+            }catch(e){}
           });
-          y+=rowH+6;
+          y+=maxImgH+14;
         }
         // Separator
         doc.setDrawColor(235,232,226);doc.line(M+3,y,W-M-3,y);y+=4;
@@ -1587,30 +1298,17 @@ async function init(){
   if(!S.projects.length&&!S.contacts.length)document.getElementById('onboard-banner').classList.remove('hidden');
 
   // 2. Check GitHub credentials and sync in background
-  getGHCreds();
-  if(ghToken&&ghGistId){
-    showGHSignedIn();
-    document.getElementById('btn-signin').style.display='none';
-    document.getElementById('btn-pull').style.display='inline-flex';
-    document.getElementById('btn-signout').style.display='inline-flex';
-    setSS('warn', had ? 'Data loaded — syncing…' : 'Connecting to GitHub…');
+  RAILWAY_URL=getRailwayUrl();
+  if(RAILWAY_URL){
+    onRailwayConnected();
     setTimeout(function(){
       if(getPendingPush()){
-        // Had unsaved changes before — push first then pull
         setPendingPush(false);
-        pushToGist(false).then(function(){
-          setTimeout(function(){pullFromGist(false);},1000);
-        });
-      } else {
-        pullFromGist(false);
-      }
-    }, 600);
-    setTimeout(startPeriodicSync, 3000);
-  }else if(ghToken&&!ghGistId){
-    setSS('warn','GitHub token found — go to Setup → Data & Sync to connect');
-    document.getElementById('btn-signin').style.display='inline-flex';
+        pushToRailway(false).then(function(){setTimeout(function(){pullFromRailway(false);},1000);});
+      }else{pullFromRailway(false);}
+    },600);
   }else{
-    setSS('off', had ? 'Data loaded — go to Setup → Data & Sync to enable sync' : 'No data yet — go to Setup to get started');
+    setSS('off',had?'Data loaded — go to Setup → Data & Sync to connect':'No data yet — go to Setup to get started');
     document.getElementById('btn-signin').style.display='inline-flex';
   }
 }
