@@ -179,7 +179,7 @@ select.fi{cursor:pointer;appearance:none;background-image:url("data:image/svg+xm
   <div class="sync-status">
     <div class="sd off" id="sync-dot"></div>
     <span class="sync-txt" id="sync-txt">Initialising…</span>
-    <span style="font-size:10px;color:var(--text3);margin-left:auto;padding-right:4px" title="App version">v15 May 2026 13:15</span>
+    <span style="font-size:10px;color:var(--text3);margin-left:auto;padding-right:4px" title="App version">v15 May 2026 20:39</span>
   </div>
   <div class="sync-acts">
     <button class="btn btn-xs btn-dark" id="btn-signin" onclick="goP('setup');goST('sync')" style="display:none">Connect GitHub</button>
@@ -656,6 +656,12 @@ function startPeriodicSync(){
   _syncTicker=setInterval(function(){
     if(navigator.onLine&&!document.hidden&&RAILWAY_URL&&(!_sseSource||_sseSource.readyState===2))checkAndPull();
   },30000);
+  // Keep-alive ping every 4 minutes to prevent Railway free tier from sleeping
+  setInterval(function(){
+    if(navigator.onLine&&RAILWAY_URL){
+      fetch(RAILWAY_URL+'/health',{cache:'no-store'}).catch(function(){});
+    }
+  },240000);
 }
 
 async function checkAndPull(){
