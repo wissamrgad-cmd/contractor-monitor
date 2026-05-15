@@ -179,7 +179,7 @@ select.fi{cursor:pointer;appearance:none;background-image:url("data:image/svg+xm
   <div class="sync-status">
     <div class="sd off" id="sync-dot"></div>
     <span class="sync-txt" id="sync-txt">Initialising…</span>
-    <span style="font-size:10px;color:var(--text3);margin-left:auto;padding-right:4px" title="App version">v15 May 2026 20:39</span>
+    <span style="font-size:10px;color:var(--text3);margin-left:auto;padding-right:4px" title="App version">v15 May 2026 22:09</span>
   </div>
   <div class="sync-acts">
     <button class="btn btn-xs btn-dark" id="btn-signin" onclick="goP('setup');goST('sync')" style="display:none">Connect GitHub</button>
@@ -653,10 +653,13 @@ function stopSSE(){if(_sseSource){_sseSource.close();_sseSource=null;}}
 
 function startPeriodicSync(){
   if(_syncTicker)clearInterval(_syncTicker);
+  // Poll every 10 seconds regardless of SSE state
   _syncTicker=setInterval(function(){
-    if(navigator.onLine&&!document.hidden&&RAILWAY_URL&&(!_sseSource||_sseSource.readyState===2))checkAndPull();
-  },30000);
-  // Keep-alive ping every 4 minutes to prevent Railway free tier from sleeping
+    if(navigator.onLine&&!document.hidden&&RAILWAY_URL){
+      autoSync();
+    }
+  },10000);
+  // Keep-alive every 4 minutes
   setInterval(function(){
     if(navigator.onLine&&RAILWAY_URL){
       fetch(RAILWAY_URL+'/health',{cache:'no-store'}).catch(function(){});
@@ -664,14 +667,24 @@ function startPeriodicSync(){
   },240000);
 }
 
-async function checkAndPull(){
+async function checkAndPull(){return autoSync();}
+async function autoSync(){
   if(!RAILWAY_URL||!navigator.onLine)return;
-  if(getPendingPush()){setPendingPush(false);await pushToRailway(false);return;}
-  var now=Date.now();if(now-_lastSyncTime<15000)return;
+  // Push pending local changes first
+  if(getPendingPush()){
+    setPendingPush(false);
+    await pushToRailway(false);
+    return;
+  }
+  // Check server timestamp — pull if newer
   try{
-    var r=await fetch(RAILWAY_URL+'/api/ping',{cache:'no-store'});if(!r.ok)return;
+    var r=await fetch(RAILWAY_URL+'/api/ping',{cache:'no-store'});
+    if(!r.ok)return;
     var j=await r.json();
-    if(new Date(j.updated_at).getTime()>_lastSyncTime+1000)pullFromRailway(false);else _lastSyncTime=now;
+    var serverTs=new Date(j.updated_at).getTime();
+    if(serverTs>_lastSyncTime+500){
+      await pullFromRailway(false);
+    }
   }catch(e){}
 }
 
@@ -695,7 +708,8 @@ function schedulePush(){
   clearTimeout(pushTimer);
   if(!navigator.onLine){setPendingPush(true);setSS('warn','⚠ Offline — saved locally');return;}
   setSS('spin','Saving…');
-  pushTimer=setTimeout(function(){pushToRailway(false);},800);
+  // Push quickly so other devices get update fast
+  pushTimer=setTimeout(function(){pushToRailway(false);},500);
 }
 
 // Compatibility
