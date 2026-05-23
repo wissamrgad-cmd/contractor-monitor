@@ -1,5 +1,5 @@
-// Contractor Monitor — Service Worker v13 — 11 May 2026 18:51
-var CACHE = 'ctm-v13';
+// Contractor Monitor — Service Worker v14 — 23 May 2026 21:39
+var CACHE = 'ctm-v14';
 var BASE = '/contractor-monitor/';
 var APP_SHELL = [
   BASE,
@@ -12,7 +12,6 @@ var APP_SHELL = [
 self.addEventListener('install', function(e) {
   e.waitUntil(
     caches.open(CACHE).then(function(cache){
-      // Cache each URL individually so one failure doesn't break all
       var promises = APP_SHELL.map(function(url){
         return cache.add(url).catch(function(err){
           console.warn('SW: failed to cache', url, err);
@@ -37,8 +36,9 @@ self.addEventListener('activate', function(e) {
 self.addEventListener('fetch', function(e) {
   var url = e.request.url;
 
-  // Never cache: API calls or non-GET
-  if(url.includes('api.github.com') ||
+  // NEVER cache or intercept Railway API calls — always go to network
+  if(url.includes('railway.app') ||
+     url.includes('api.github.com') ||
      url.includes('cdnjs.cloudflare.com') ||
      url.includes('unpkg.com') ||
      e.request.method !== 'GET'){
@@ -51,12 +51,11 @@ self.addEventListener('fetch', function(e) {
     return;
   }
 
-  // Navigation requests — network first, cache fallback
+  // Navigation — network first, cache fallback for offline
   if(e.request.mode === 'navigate'){
     e.respondWith(
       fetch(e.request)
         .then(function(response){
-          // Cache the fresh version
           if(response.ok){
             var clone = response.clone();
             caches.open(CACHE).then(function(cache){ cache.put(e.request, clone); });
@@ -64,13 +63,12 @@ self.addEventListener('fetch', function(e) {
           return response;
         })
         .catch(function(){
-          // Offline — serve cached index.html
           return caches.match(BASE + 'index.html')
             .then(function(cached){
               return cached || caches.match(BASE)
-                .then(function(cached2){
-                  return cached2 || new Response(
-                    '<h2>App is loading — please wait a moment and refresh</h2>',
+                .then(function(c2){
+                  return c2 || new Response(
+                    '<h2>Loading — please wait and refresh</h2>',
                     {headers:{'Content-Type':'text/html'}}
                   );
                 });
@@ -80,7 +78,7 @@ self.addEventListener('fetch', function(e) {
     return;
   }
 
-  // All other requests — cache first, network fallback
+  // App shell assets — cache first
   e.respondWith(
     caches.match(e.request).then(function(cached){
       if(cached) return cached;

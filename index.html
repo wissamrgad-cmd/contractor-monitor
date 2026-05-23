@@ -179,7 +179,7 @@ select.fi{cursor:pointer;appearance:none;background-image:url("data:image/svg+xm
   <div class="sync-status">
     <div class="sd off" id="sync-dot"></div>
     <span class="sync-txt" id="sync-txt">Initialising…</span>
-    <span style="font-size:10px;color:var(--text3);margin-left:auto;padding-right:4px" title="App version">v23 May 2026 21:26</span>
+    <span style="font-size:10px;color:var(--text3);margin-left:auto;padding-right:4px" title="App version">v23 May 2026 21:39</span>
   </div>
   <div class="sync-acts">
     <button class="btn btn-xs btn-dark" id="btn-signin" onclick="goP('setup');goST('sync')" style="display:none">Connect GitHub</button>
@@ -610,15 +610,29 @@ function saveRailwayUrl(url){url=(url||'').trim().replace(/\/+$/,'');localStorag
 async function pushToRailway(showToast){
   if(!RAILWAY_URL)return;
   if(!navigator.onLine){setPendingPush(true);setSS('warn','⚠ Offline — saved locally');return;}
+  setSS('spin','Pushing…');
   try{
-    var res=await fetch(RAILWAY_URL+'/api/data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({data:S})});
+    var res=await fetch(RAILWAY_URL+'/api/data',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({data:S})
+    });
     if(res.ok){
-      var j=await res.json();_lastSyncTime=new Date(j.updated_at).getTime();
-      setSS('ok','✓ Saved at '+new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}));
-      if(showToast)toast('Saved ✓');
-    }else{setSS('warn','Save failed ('+res.status+')');setPendingPush(true);}
-  }catch(e){setSS('warn','⚠ Offline — saved locally');setPendingPush(true);}
+      var j=await res.json();
+      _lastSyncTime=new Date(j.updated_at).getTime();
+      var now=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+      setSS('ok','✓ Pushed at '+now+' ('+S.tasks.length+' tasks)');
+      if(showToast)toast('✓ Pushed '+S.tasks.length+' tasks');
+    }else{
+      setSS('warn','Push failed ('+res.status+')');
+      setPendingPush(true);
+    }
+  }catch(e){
+    setSS('warn','⚠ Push error: '+e.message.slice(0,50));
+    setPendingPush(true);
+  }
 }
+
 
 async function pullFromRailway(showToast){
   if(!RAILWAY_URL)return;
@@ -632,12 +646,12 @@ async function pullFromRailway(showToast){
     // Always update lastSyncTime regardless of data
     _lastSyncTime=new Date(j.updated_at||Date.now()).getTime();
     if(j.data&&Object.keys(j.data).length>0){
-      var newTaskCount=(j.data.tasks||[]).length;
-      var curTaskCount=S.tasks.length;
+      var serverTaskCount=(j.data.tasks||[]).length;
+      var localTaskCount=S.tasks.length;
       S=Object.assign({firm:{name:'Your Firm Name',sub:'Project Management',phone:'',email:'',addr:'',logo:null},projects:[],contacts:[],tasks:[],_deleted:{}},j.data);
       saveLocal();updNav();var pg=document.querySelector('.htab.on');goP(pg?pg.id.replace('nt-',''):'dash');
       var now=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
-      setSS('ok','✓ Synced at '+now+' ('+S.tasks.length+' tasks)');
+      setSS('ok','✓ '+now+' — '+S.tasks.length+' tasks');
       if(showToast)toast('Synced ✓ '+S.tasks.length+' tasks');
     }else{setSS('warn','No server data — pushing local data…');await pushToRailway(false);}
   }catch(e){setSS('warn','⚠ No internet — working from local data');if(showToast)toast('No internet',3000);}
