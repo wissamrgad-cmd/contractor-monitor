@@ -179,7 +179,7 @@ select.fi{cursor:pointer;appearance:none;background-image:url("data:image/svg+xm
   <div class="sync-status">
     <div class="sd off" id="sync-dot"></div>
     <span class="sync-txt" id="sync-txt">Initialising…</span>
-    <span style="font-size:10px;color:var(--text3);margin-left:auto;padding-right:4px" title="App version">v23 May 2026 21:12</span>
+    <span style="font-size:10px;color:var(--text3);margin-left:auto;padding-right:4px" title="App version">v23 May 2026 21:26</span>
   </div>
   <div class="sync-acts">
     <button class="btn btn-xs btn-dark" id="btn-signin" onclick="goP('setup');goST('sync')" style="display:none">Connect GitHub</button>
@@ -623,7 +623,8 @@ async function pushToRailway(showToast){
 async function pullFromRailway(showToast){
   if(!RAILWAY_URL)return;
   if(!navigator.onLine){setSS('warn','⚠ Offline — working from local data');return;}
-  setSS('spin','Syncing…');
+  // Only show spinner on manual pull
+  if(showToast)setSS('spin','Syncing…');
   try{
     var res=await fetch(RAILWAY_URL+'/api/data',{cache:'no-store'});
     if(!res.ok){setSS('warn','Pull failed ('+res.status+')');return;}
@@ -672,7 +673,7 @@ function startPeriodicSync(){
     if(navigator.onLine&&!document.hidden&&RAILWAY_URL){
       autoSync();
     }
-  },10000);
+  },8000);
   // Keep-alive every 4 minutes
   setInterval(function(){
     if(navigator.onLine&&RAILWAY_URL){
@@ -684,23 +685,9 @@ function startPeriodicSync(){
 async function checkAndPull(){return autoSync();}
 async function autoSync(){
   if(!RAILWAY_URL||!navigator.onLine)return;
-  // Push pending local changes first
-  if(getPendingPush()){
-    setPendingPush(false);
-    await pushToRailway(false);
-    return;
-  }
-  try{
-    var r=await fetch(RAILWAY_URL+'/api/ping',{cache:'no-store'});
-    if(!r.ok)return;
-    var j=await r.json();
-    var serverTs=new Date(j.updated_at).getTime();
-    // Pull if: server is newer OR we've never synced OR it's been >60s
-    var age=Date.now()-_lastSyncTime;
-    if(serverTs>_lastSyncTime+500||_lastSyncTime===0||age>60000){
-      await pullFromRailway(false);
-    }
-  }catch(e){}
+  if(getPendingPush()){setPendingPush(false);await pushToRailway(false);return;}
+  // Simply always pull — Railway is fast, overhead is minimal
+  await pullFromRailway(false);
 }
 
 document.addEventListener('visibilitychange',function(){
