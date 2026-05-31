@@ -179,7 +179,7 @@ select.fi{cursor:pointer;appearance:none;background-image:url("data:image/svg+xm
   <div class="sync-status">
     <div class="sd off" id="sync-dot"></div>
     <span class="sync-txt" id="sync-txt">Initialising…</span>
-    <span style="font-size:10px;color:var(--text3);margin-left:auto;padding-right:4px" title="App version">v23 May 2026 21:39</span>
+    <span style="font-size:10px;color:var(--text3);margin-left:auto;padding-right:4px" title="App version">v31 May 2026 16:45</span>
   </div>
   <div class="sync-acts">
     <button class="btn btn-xs btn-dark" id="btn-signin" onclick="goP('setup');goST('sync')" style="display:none">Connect GitHub</button>
@@ -649,7 +649,13 @@ async function pullFromRailway(showToast){
       var serverTaskCount=(j.data.tasks||[]).length;
       var localTaskCount=S.tasks.length;
       S=Object.assign({firm:{name:'Your Firm Name',sub:'Project Management',phone:'',email:'',addr:'',logo:null},projects:[],contacts:[],tasks:[],_deleted:{}},j.data);
-      saveLocal();updNav();var pg=document.querySelector('.htab.on');goP(pg?pg.id.replace('nt-',''):'dash');
+      saveLocal();updNav();
+      // Re-render without resetting filters
+      var pg=document.querySelector('.htab.on');
+      var pgId=pg?pg.id.replace('nt-',''):'dash';
+      if(pgId==='dash'){renderDash();}
+      else if(pgId==='tasks'){renderTL();}
+      else if(pgId==='setup'){popFirm();}
       var now=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
       setSS('ok','✓ '+now+' — '+S.tasks.length+' tasks');
       if(showToast)toast('Synced ✓ '+S.tasks.length+' tasks');
